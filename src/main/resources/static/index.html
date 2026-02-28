@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShieldMail | Secure Your Inbox</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        .hero {
+            height: 80vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            animation: fadeIn 1s ease-out;
+        }
+
+        .hero h1 {
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.1;
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            color: var(--text-muted);
+            max-width: 600px;
+            margin-bottom: 3rem;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            color: white;
+            padding: 1rem 2.5rem;
+            border-radius: 0.75rem;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            margin-top: 4rem;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <nav style="display: flex; justify-content: space-between; align-items: center; padding: 2rem 0;">
+            <div style="font-size: 1.5rem; font-weight: 800; color: white;">ShieldMail</div>
+            <a href="/login.html" class="btn-secondary" style="padding: 0.75rem 1.5rem;">Login</a>
+        </nav>
+
+        <section class="hero">
+            <h1>Stop Spam Before It <br><span style="color: var(--primary)">Hits Your Inbox</span></h1>
+            <p>A premium, AI-powered mail classification system designed to keep your digital life clean and secure
+                using advanced Naive Bayes logic.</p>
+            <div class="cta-buttons">
+                <a href="/login.html" class="btn-secondary"
+                    style="background: var(--primary); border: none; padding: 1rem 3rem;">Get Started Free</a>
+                <a href="#features" class="btn-secondary">Learn More</a>
+            </div>
+        </section>
+
+        <div id="features" class="feature-grid">
+            <div class="glass-card" style="text-align: center;">
+                <div style="font-size: 2rem; margin-bottom: 1rem;">🧠</div>
+                <h4>AI Powered</h4>
+                <p style="font-size: 0.9rem; color: var(--text-muted); margin-top: 0.5rem;">Advanced Naive Bayes
+                    classifier trained to detect even the subtlest spam patterns.</p>
+            </div>
+            <div class="glass-card" style="text-align: center;">
+                <div style="font-size: 2rem; margin-bottom: 1rem;">🛡️</div>
+                <h4>Secure Storage</h4>
+                <p style="font-size: 0.9rem; color: var(--text-muted); margin-top: 0.5rem;">All your scan results are
+                    encrypted and stored safely in MongoDB Atlas.</p>
+            </div>
+            <div class="glass-card" style="text-align: center;">
+                <div style="font-size: 2rem; margin-bottom: 1rem;">📊</div>
+                <h4>Detailed Analytics</h4>
+                <p style="font-size: 0.9rem; color: var(--text-muted); margin-top: 0.5rem;">Monitor your inbox health
+                    with our real-time admin statistics dashboard.</p>
+            </div>
+        </div>
+    </div>
+
+    <footer
+        style="margin-top: 6rem; padding: 4rem 0; border-top: 1px solid var(--glass-border); text-align: center; color: var(--text-muted); font-size: 0.9rem;">
+        &copy; 2026 ShieldMail AI. All rights reserved.
+    </footer>
+
+</body>
+
+</html>

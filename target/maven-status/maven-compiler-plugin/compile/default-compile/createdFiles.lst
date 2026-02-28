@@ -1,0 +1,8 @@
+com\example\controller\AuthController.class
+com\example\model\Email.class
+com\example\controller\SpamController.class
+com\example\repository\EmailRepository.class
+com\example\service\SpamService.class
+com\example\repository\UserRepository.class
+com\example\SpamDetectionApplication.class
+com\example\model\User.class

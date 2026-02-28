@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body style="display: flex; align-items: center; justify-content: center; min-height: 100vh;">
+
+    <!-- Home Button -->
+    <a href="/index.html"
+        style="position: fixed; top: 2rem; left: 2rem; color: var(--text-muted); text-decoration: none; font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem; transition: all 0.3s ease; background: rgba(255,255,255,0.05); padding: 0.5rem 1rem; border-radius: 2rem; border: 1px solid var(--glass-border); backdrop-filter: blur(5px); z-index: 1000;"
+        onmouseover="this.style.color='white'; this.style.background='rgba(255,255,255,0.1)'"
+        onmouseout="this.style.color='var(--text-muted)'; this.style.background='rgba(255,255,255,0.05)'">
+        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6">
+            </path>
+        </svg>
+        Home
+    </a>
+
+    <div class="glass-card" style="width: 100%; max-width: 400px; text-align: center; position: relative;">
+        <h2 style="margin-bottom: 2rem;">Welcome Back</h2>
+
+        <div id="authContent">
+            <div class="input-section" id="formFields">
+                <input type="text" id="username" placeholder="Username"
+                    style="width: 100%; padding: 1rem; background: rgba(15, 23, 42, 0.5); border: 1px solid var(--glass-border); border-radius: 0.75rem; color: white; margin-bottom: 1rem;">
+                <input type="password" id="password" placeholder="Password"
+                    style="width: 100%; padding: 1rem; background: rgba(15, 23, 42, 0.5); border: 1px solid var(--glass-border); border-radius: 0.75rem; color: white; margin-bottom: 1rem;">
+
+                <div id="extraFields" style="display: none;">
+                    <input type="text" id="fullName" placeholder="Full Name"
+                        style="width: 100%; padding: 1rem; background: rgba(15, 23, 42, 0.5); border: 1px solid var(--glass-border); border-radius: 0.75rem; color: white; margin-bottom: 1rem;">
+                    <input type="email" id="email" placeholder="Email Address"
+                        style="width: 100%; padding: 1rem; background: rgba(15, 23, 42, 0.5); border: 1px solid var(--glass-border); border-radius: 0.75rem; color: white; margin-bottom: 1rem;">
+                    <input type="text" id="phoneNumber" placeholder="Phone Number"
+                        style="width: 100%; padding: 1rem; background: rgba(15, 23, 42, 0.5); border: 1px solid var(--glass-border); border-radius: 0.75rem; color: white; margin-bottom: 1rem;">
+                </div>
+
+                <button onclick="handleSubmit()"
+                    style="width: 100%; justify-content: center; margin-top: 1rem;">Login</button>
+                <p style="margin-top: 1.5rem; color: var(--text-muted); font-size: 0.9rem;">
+                    Don't have an account? <a href="#" onclick="toggleAuth()"
+                        style="color: var(--primary); text-decoration: none;">Register</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let isLogin = true;
+
+        function toggleAuth() {
+            isLogin = !isLogin;
+            const title = document.querySelector('h2');
+            const button = document.querySelector('button');
+            const footer = document.querySelector('p');
+            const extraFields = document.getElementById('extraFields');
+
+            if (isLogin) {
+                title.innerText = "Welcome Back";
+                button.innerText = "Login";
+                extraFields.style.display = "none";
+                footer.innerHTML = `Don't have an account? <a href="#" onclick="toggleAuth()" style="color: var(--primary); text-decoration: none;">Register</a>`;
+            } else {
+                title.innerText = "Create Account";
+                button.innerText = "Register";
+                extraFields.style.display = "block";
+                footer.innerHTML = `Already have an account? <a href="#" onclick="toggleAuth()" style="color: var(--primary); text-decoration: none;">Login</a>`;
+            }
+        }
+
+        function handleSubmit() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const endpoint = isLogin ? "/api/auth/login" : "/api/auth/register";
+
+            const payload = { username, password };
+
+            if (!isLogin) {
+                payload.fullName = document.getElementById('fullName').value;
+                payload.email = document.getElementById('email').value;
+                payload.phoneNumber = document.getElementById('phoneNumber').value;
+            }
+
+            fetch(endpoint, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === "success") {
+                        if (isLogin) {
+                            localStorage.setItem('user', data.username);
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Login Successful',
+                                text: 'Welcome back, ' + data.username + '!',
+                                timer: 1500,
+                                showConfirmButton: false,
+                                background: '#1e293b',
+                                color: '#fff'
+                            }).then(() => {
+                                window.location.href = "/dashboard.html";
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success!',
+                                text: 'Registration successful! Please login.',
+                                background: '#1e293b',
+                                color: '#fff'
+                            }).then(() => {
+                                toggleAuth();
+                            });
+                        }
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: data.message,
+                            background: '#1e293b',
+                            color: '#fff'
+                        });
+                    }
+                });
+        }
+    </script>
+
+</body>
+
+</html>

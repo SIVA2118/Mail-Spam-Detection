@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mail Spam Detection | Dashboard</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+
+<body>
+
+    <div class="container">
+        <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 3rem;">
+            <div>
+                <h1>ShieldMail</h1>
+                <p style="color: var(--text-muted)">Intelligent Spam Detection powered by Naive Bayes</p>
+            </div>
+            <div id="userProfile" style="display: flex; align-items: center; gap: 1rem;">
+                <a href="/profile.html"
+                    style="text-decoration: none; display: flex; align-items: center; gap: 0.5rem; transition: transform 0.3s ease;"
+                    onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                    <div style="width: 32px; height: 32px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; color: white; font-size: 0.8rem;"
+                        id="userInitial">U</div>
+                    <span id="displayUsername" style="color: white; font-weight: 600;"></span>
+                </a>
+                <button onclick="logout()"
+                    style="background: rgba(239, 68, 68, 0.1); color: var(--danger); border: 1px solid var(--danger); padding: 0.5rem 1rem; cursor: pointer; border-radius: 0.5rem; transition: all 0.3s ease;">
+                    Logout
+                </button>
+            </div>
+        </header>
+
+        <div class="grid">
+            <div class="left-col">
+                <div class="glass-card">
+                    <h3>Scan Message</h3>
+                    <p style="color: var(--text-muted); margin-bottom: 1.5rem; font-size: 0.9rem;">Paste the email
+                        content below to analyze for spam markers.</p>
+                    <div class="input-section">
+                        <textarea id="message" rows="8" placeholder="Enter email content here..."></textarea>
+                        <button onclick="checkSpam()">
+                            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2">
+                                </path>
+                            </svg>
+                            Analyze Now
+                        </button>
+                    </div>
+                    <div id="resultContainer" style="display:none; margin-top: 1rem;">
+                        <p style="font-size: 0.9rem; color: var(--text-muted)">Analysis Result:</p>
+                        <div id="resultBadge" class="result-badge"></div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="right-col">
+                <div class="glass-card">
+                    <h3>Admin Dashboard</h3>
+                    <div class="stats-grid" id="statsGrid">
+                        <div class="stat-item">
+                            <div class="stat-value" id="stat-total">0</div>
+                            <div class="stat-label">Total Scans</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="stat-spam" style="color: var(--danger)">0</div>
+                            <div class="stat-label">Spam</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="stat-ham" style="color: var(--success)">0</div>
+                            <div class="stat-label">Safe</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="glass-card">
+                    <h3>Scan History</h3>
+                    <p style="color: var(--text-muted); margin-bottom: 1.5rem; font-size: 0.9rem;">Recent
+                        classifications (Click to view full mail)</p>
+                    <div class="history-list" id="historyList">
+                        <!-- History items will be injected here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Email Detail Modal -->
+    <div id="mailModal" class="modal-overlay"
+        style="display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.8); z-index:1000; backdrop-filter: blur(10px); justify-content: center; align-items: center;">
+        <button onclick="closeModal()"
+            style="position: absolute; top: 2rem; right: 2rem; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; cursor: pointer; font-size: 1.5rem; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease; z-index: 1001;"
+            onmouseover="this.style.background='rgba(239, 68, 68, 0.2)'"
+            onmouseout="this.style.background='rgba(255,255,255,0.1)'">&times;</button>
+        <div class="glass-card"
+            style="max-width: 600px; width: 90%; position: relative; animation: modalIn 0.3s ease-out;">
+            <div
+                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid var(--glass-border); padding-bottom: 1rem;">
+                <h3 style="margin: 0;">Email Details</h3>
+                <span id="modalBadge" class="result-badge"></span>
+            </div>
+            <div style="margin-bottom: 1.5rem;">
+                <label
+                    style="color: var(--text-muted); font-size: 0.8rem; display: block; margin-bottom: 0.5rem;">TIMESTAMP</label>
+                <div id="modalTime" style="font-size: 0.9rem; font-weight: 600;"></div>
+            </div>
+            <div>
+                <label
+                    style="color: var(--text-muted); font-size: 0.8rem; display: block; margin-bottom: 0.5rem;">MESSAGE
+                    CONTENT</label>
+                <div id="modalContent"
+                    style="background: rgba(0,0,0,0.2); padding: 1.5rem; border-radius: 0.5rem; white-space: pre-wrap; word-break: break-all; max-height: 300px; overflow-y: auto; font-family: 'Inter', sans-serif; line-height: 1.6;">
+                </div>
+            </div>
+            <button onclick="closeModal()"
+                style="margin-top: 2rem; width: 100%; background: var(--primary); justify-content: center;">Close
+                View</button>
+        </div>
+    </div>
+
+    <style>
+        .history-item {
+            cursor: pointer;
+            transition: transform 0.2s ease, background 0.2s ease;
+        }
+
+        .history-item:hover {
+            transform: translateX(5px);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        @keyframes modalIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+
+
+    <script>
+        // Auth Check
+        const user = localStorage.getItem('user');
+        if (!user) {
+            window.location.href = "/index.html";
+        } else {
+            document.getElementById('displayUsername').innerText = `${user}`;
+            document.getElementById('userInitial').innerText = user.charAt(0).toUpperCase();
+        }
+
+        function logout() {
+            localStorage.removeItem('user');
+            window.location.href = "/index.html";
+        }
+
+        function updateStats() {
+            fetch('/api/stats')
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById('stat-total').innerText = data.total;
+                    document.getElementById('stat-spam').innerText = data.spam;
+                    document.getElementById('stat-ham').innerText = data.ham;
+                });
+        }
+
+        function updateHistory() {
+            fetch('/api/history')
+                .then(res => res.json())
+                .then(data => {
+                    const list = document.getElementById('historyList');
+                    list.innerHTML = '';
+                    data.forEach(item => {
+                        const div = document.createElement('div');
+                        div.className = `history-item ${item.result === 'Spam' ? 'spam-item' : 'ham-item'}`;
+                        div.style.position = 'relative';
+                        div.onclick = () => showModal(item);
+                        div.innerHTML = `
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; padding-right: 2rem;">
+                            <p style="font-size: 0.9rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 150px;">${item.message}</p>
+                            <span class="result-badge ${item.result === 'Spam' ? 'spam' : 'ham'}" style="margin:0; font-size: 0.7rem; padding: 0.2rem 0.6rem;">${item.result}</span>
+                        </div>
+                        <p style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.5rem;">${new Date(item.timestamp).toLocaleString()}</p>
+                        <button onclick="event.stopPropagation(); deleteMail('${item.id}')" style="position: absolute; right: 0.5rem; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--danger); opacity: 0.3; cursor: pointer; transition: opacity 0.3s ease; padding: 0.5rem;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.3'">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        </button>
+                    `;
+                        list.appendChild(div);
+                    });
+                });
+        }
+
+        function deleteMail(id) {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: 'rgba(255,255,255,0.1)',
+                confirmButtonText: 'Yes, delete it!',
+                background: '#1e293b',
+                color: '#fff'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(`/api/delete/${id}`, { method: 'DELETE' })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.status === 'success') {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Deleted!',
+                                    text: 'Scan result has been removed.',
+                                    timer: 1500,
+                                    showConfirmButton: false,
+                                    background: '#1e293b',
+                                    color: '#fff'
+                                });
+                                updateHistory();
+                                updateStats();
+                            } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: data.message,
+                                    background: '#1e293b',
+                                    color: '#fff'
+                                });
+                            }
+                        });
+                }
+            });
+        }
+
+        function showModal(item) {
+            document.getElementById('mailModal').style.display = 'flex';
+            document.getElementById('modalBadge').innerText = item.result;
+            document.getElementById('modalBadge').className = `result-badge ${item.result === 'Spam' ? 'spam' : 'ham'}`;
+            document.getElementById('modalTime').innerText = new Date(item.timestamp).toLocaleString();
+            document.getElementById('modalContent').innerText = item.message;
+        }
+
+        function closeModal() {
+            document.getElementById('mailModal').style.display = 'none';
+        }
+
+        function checkSpam() {
+            const message = document.getElementById('message').value;
+            if (!message.trim()) return;
+
+            fetch("/api/check", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message: message })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    const container = document.getElementById('resultContainer');
+                    const badge = document.getElementById('resultBadge');
+                    container.style.display = 'block';
+                    badge.innerText = data.result;
+                    badge.className = `result-badge ${data.result === 'Spam' ? 'spam' : 'ham'}`;
+
+                    updateStats();
+                    updateHistory();
+                });
+        }
+
+        // Initial load
+        updateStats();
+        updateHistory();
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile | ShieldMail</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        .profile-card {
+            max-width: 600px;
+            margin: 4rem auto;
+            text-align: left;
+        }
+
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .avatar-large {
+            width: 100px;
+            height: 100px;
+            background: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            font-weight: 800;
+            color: white;
+            box-shadow: 0 10px 25px rgba(99, 102, 241, 0.4);
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 1.25rem 0;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .info-label {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .info-value {
+            font-weight: 600;
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            margin-bottom: 2rem;
+            transition: color 0.3s ease;
+        }
+
+        .back-btn:hover {
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="profile-card">
+            <a href="/dashboard.html" class="back-btn">
+                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+                Back to Dashboard
+            </a>
+
+            <div class="glass-card">
+                <div
+                    style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem;">
+                    <div class="profile-header" style="margin-bottom: 0;">
+                        <div class="avatar-large" id="profileInitial">U</div>
+                        <div>
+                            <h2 id="profileFullName">User Name</h2>
+                            <p id="profileUsername" style="color: var(--text-muted)">@username</p>
+                        </div>
+                    </div>
+                    <button id="editBtn" onclick="toggleEdit()"
+                        style="background: rgba(99, 102, 241, 0.1); color: var(--primary); border: 1px solid var(--primary); padding: 0.5rem 1rem;">
+                        Edit Profile
+                    </button>
+                </div>
+
+                <div id="viewMode">
+                    <div class="info-row">
+                        <span class="info-label">Email Address</span>
+                        <span class="info-value" id="profileEmail">email@example.com</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Phone Number</span>
+                        <span class="info-value" id="profilePhone">+1 234 567 890</span>
+                    </div>
+                </div>
+
+                <div id="editMode" style="display: none;">
+                    <div class="input-section" style="margin-top: 1rem;">
+                        <label class="info-label">Full Name</label>
+                        <input type="text" id="editFullName"
+                            style="width: 100%; padding: 0.75rem; background: rgba(15, 23, 42, 0.5); border: 1px solid var(--glass-border); border-radius: 0.5rem; color: white; margin-bottom: 1rem; margin-top: 0.5rem;">
+
+                        <label class="info-label">Email Address</label>
+                        <input type="email" id="editEmail"
+                            style="width: 100%; padding: 0.75rem; background: rgba(15, 23, 42, 0.5); border: 1px solid var(--glass-border); border-radius: 0.5rem; color: white; margin-bottom: 1rem; margin-top: 0.5rem;">
+
+                        <label class="info-label">Phone Number</label>
+                        <input type="text" id="editPhone"
+                            style="width: 100%; padding: 0.75rem; background: rgba(15, 23, 42, 0.5); border: 1px solid var(--glass-border); border-radius: 0.5rem; color: white; margin-bottom: 1.5rem; margin-top: 0.5rem;">
+
+                        <div style="display: flex; gap: 1rem;">
+                            <button onclick="saveProfile()" style="flex: 1; justify-content: center;">Save
+                                Changes</button>
+                            <button onclick="toggleEdit()"
+                                style="flex: 1; justify-content: center; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border);">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-row">
+                    <span class="info-label">Account Status</span>
+                    <span class="info-value" style="color: var(--success)">Active</span>
+                </div>
+
+                <button id="logoutBtn" onclick="logout()"
+                    style="margin-top: 2.5rem; background: rgba(239, 68, 68, 0.1); color: var(--danger); border: 1px solid var(--danger); width: 100%; justify-content: center;">
+                    Logout from Account
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const loggedUser = localStorage.getItem('user');
+        if (!loggedUser) {
+            window.location.href = "/login.html";
+        }
+
+        let currentUserData = {};
+
+        function fetchProfile() {
+            fetch(`/api/auth/profile?username=${loggedUser}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === "success") {
+                        currentUserData = data;
+                        document.getElementById('profileFullName').innerText = data.fullName || data.username;
+                        document.getElementById('profileUsername').innerText = `@${data.username}`;
+                        document.getElementById('profileEmail').innerText = data.email || "Not provided";
+                        document.getElementById('profilePhone').innerText = data.phoneNumber || "Not provided";
+                        document.getElementById('profileInitial').innerText = data.username.charAt(0).toUpperCase();
+
+                        // Pre-fill edit fields
+                        document.getElementById('editFullName').value = data.fullName || "";
+                        document.getElementById('editEmail').value = data.email || "";
+                        document.getElementById('editPhone').value = data.phoneNumber || "";
+                    }
+                });
+        }
+
+        function toggleEdit() {
+            const viewMode = document.getElementById('viewMode');
+            const editMode = document.getElementById('editMode');
+            const editBtn = document.getElementById('editBtn');
+            const isEditing = editMode.style.display === 'block';
+
+            if (isEditing) {
+                editMode.style.display = 'none';
+                viewMode.style.display = 'block';
+                editBtn.style.display = 'block';
+            } else {
+                editMode.style.display = 'block';
+                viewMode.style.display = 'none';
+                editBtn.style.display = 'none';
+            }
+        }
+
+        function saveProfile() {
+            const updatedData = {
+                username: loggedUser,
+                fullName: document.getElementById('editFullName').value,
+                email: document.getElementById('editEmail').value,
+                phoneNumber: document.getElementById('editPhone').value
+            };
+
+            fetch('/api/auth/update', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updatedData)
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Updated!',
+                            text: 'Profile updated successfully!',
+                            timer: 1500,
+                            showConfirmButton: false,
+                            background: '#1e293b',
+                            color: '#fff'
+                        }).then(() => {
+                            toggleEdit();
+                            fetchProfile();
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: data.message,
+                            background: '#1e293b',
+                            color: '#fff'
+                        });
+                    }
+                });
+        }
+
+        function logout() {
+            localStorage.removeItem('user');
+            window.location.href = "/index.html";
+        }
+
+        fetchProfile();
+    </script>
+
+</body>
+
+</html>
